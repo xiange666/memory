@@ -1,5 +1,11 @@
 package com.album.common.config;
 
+import com.album.controller.AlbumController;
+import com.album.controller.NewsController;
+import com.album.controller.PhotoController;
+import com.album.controller.ScoreController;
+import com.album.controller.UserController;
+import com.album.model._MappingKit;
 import com.jfinal.config.Constants;
 import com.jfinal.config.Handlers;
 import com.jfinal.config.Interceptors;
@@ -10,6 +16,7 @@ import com.jfinal.core.JFinal;
 import com.jfinal.kit.PropKit;
 import com.jfinal.template.Engine;
 import com.jfinal.plugin.druid.DruidPlugin;
+import com.jfinal.plugin.ehcache.EhCachePlugin;
 import com.jfinal.json.FastJsonFactory;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
@@ -46,7 +53,11 @@ public class MainConfig extends JFinalConfig {
 	 */
 	@Override
 	public void configRoute(Routes me) {
-
+		me.add("/news", NewsController.class);
+		me.add("/score", ScoreController.class);
+		me.add("/user", UserController.class);
+		me.add("/album", AlbumController.class);
+		me.add("/photo", PhotoController.class);
 	}
 	/**
 	 * 配置JFinal插件
@@ -64,10 +75,12 @@ public class MainConfig extends JFinalConfig {
 		arp.setShowSql(PropKit.getBoolean("devMode"));
 		arp.setDialect(new MysqlDialect());
 		/********在此添加数据库 表-Model 映射*********/
-		
+		_MappingKit.mapping(arp);
 		//添加到插件列表中
 		me.add(dbPlugin);
 		me.add(arp);
+		//配置缓存插件
+		me.add(new EhCachePlugin());
 	}
 	/**
 	 * 配置全局拦截器

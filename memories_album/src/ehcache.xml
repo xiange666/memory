@@ -1,0 +1,29 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
+         updateCheck="false" monitoring="autodetect"
+         dynamicConfig="true">
+
+    <!--指定一个文件，当ehcache把数据写到硬盘上时，会默认把数据写到该文件下-->
+    <!--user.home - 用户主目录；user.dir - 用户当前工作目录；java.io.tmpdir - 默认临时文件路径。-->
+    <diskStore path="java.io.tmpdir" />
+
+    <!-- 设定缓存的默认数据过期策略 -->
+    <defaultCache maxElementsInMemory="10000"
+                  eternal="true"
+                  timeToIdleSeconds="3600"
+                  timeToLiveSeconds="3600"
+                  overflowToDisk="true">
+    </defaultCache>
+
+    <!--自定义cache-->
+    <cache  name="Memory"
+            maxElementsInMemory="10000"
+            maxElementsOnDisk="1000"
+            eternal="false"
+            overflowToDisk="true"
+            timeToIdleSeconds="900"
+            timeToLiveSeconds="1800"
+            memoryStoreEvictionPolicy="LFU">
+    </cache>
+
+</ehcache>
