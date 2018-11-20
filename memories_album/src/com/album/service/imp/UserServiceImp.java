@@ -60,9 +60,10 @@ public class UserServiceImp implements UserService{
 		// TODO Auto-generated method stub
 		JSONArray jsonArray=new JSONArray();
 		
-		List<News> news=News.dao.find("select * from news where public_id=?",userId);
+		List<News> news=News.dao.find("select * from news where public_id=? order by gmt_create desc",userId);
 		for (News n : news) {
-			List<Comment> comments=Comment.dao.find("select * from comment where news_id=? order by gmt_create desc ",n.getNewsId());
+			List<Comment> comments=Comment.dao.find("select * from comment where news_id=? "
+					+ "order by gmt_create desc ",n.getNewsId());
 			JSONObject jsonObject=new JSONObject();
 			jsonObject.put("news", n);
 			jsonObject.put("comments", comments);
@@ -75,7 +76,7 @@ public class UserServiceImp implements UserService{
 	@Override
 	public List<Album> find_albums(Long userId) {
 		// TODO Auto-generated method stub
-		return Album.dao.find("select * from album where user_id=?",userId);
+		return Album.dao.find("select * from album where user_id=? order by gmt_create desc",userId);
 	}
 
 	@Override
