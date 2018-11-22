@@ -1,12 +1,14 @@
 package com.album.controller;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.album.common.config.BaseResponse;
 import com.album.common.config.ResultCodeEnum;
 import com.album.model.Album;
 import com.album.service.AlbumService;
+import com.album.service.OssClientUtil;
 import com.album.service.imp.AlbumServiceImp;
 import com.alibaba.fastjson.JSONArray;
 import com.jfinal.core.Controller;
@@ -71,15 +73,45 @@ public class AlbumController extends Controller{
 	public void addPhoto()
 	{
 		Long album_id=this.getParaToLong("album_id");
+		OssClientUtil ossClientUtil=new OssClientUtil();
 		List<UploadFile> photos=this.getFiles();
-		for (UploadFile uploadFile : photos) {
-			String path=uploadFile.getUploadPath();
-			String filename=uploadFile.getFileName();
-			path=path+"\\"+filename;
+		if(album_id==null||photos==null)
+		{
+			baseResponse.setResult(ResultCodeEnum.NOT_COMPLETE);
+		}else
+		{
+			List<String > photos_url=new ArrayList<String>();
+			for (UploadFile uploadFile : photos) {
+				//获取上传的图片url
+				String path=uploadFile.getUploadPath();
+				String filename=uploadFile.getFileName();
+				path=path+"\\"+filename;
+				ossClientUtil.uploadImg2Oss(path);
+				String url=ossClientUtil.getImgUrl(path);
+				if(url==null)
+				{
+					photos_url=null;
+					break;
+				}
+				photos_url.add(url);
+			}
+			if(photos_url==null)
+			{
+				baseResponse.setResult(ResultCodeEnum.UPLOAD_ERROR);
+			}else
+			{
+				if(albumService.add_photo(album_id, photos_url))
+				{
+					baseResponse.setResult(ResultCodeEnum.SUCCESS);
+				}else
+				{
+					baseResponse.setResult(ResultCodeEnum.ADD_ERROR);
+				}
+			}
 			
 		}
 		
-		
+		renderJson(baseResponse);
 		
 	}
 	

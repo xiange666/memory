@@ -16,5 +16,15 @@ public class Constant {
 	public static final int IS_OTHER=1;		//表示该条动态是关注人的
 	
 	
+	//设置访问域名
+	public static String endpoint="http://oss-cn-beijing.aliyuncs.com";
+	//设置访问密钥
+	public static String accessKeyId="LTAIvKZJefbG56Ip";
+	public static String accessKeySecret="qjtJeuytBmbsPB5zwK7Ioqc9RRlA4l";
+	//选择存储空间
+	public static String bucketName="memor-bundle";
+	//选择文件夹名称
+	public static String folder="test/";
+	
 
 }

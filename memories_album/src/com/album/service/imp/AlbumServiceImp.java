@@ -36,7 +36,7 @@ public class AlbumServiceImp implements AlbumService{
 	}
 
 	@Override
-	public boolean add_photo(Long album_id, String[] photos_url) {
+	public boolean add_photo(Long album_id, List<String> photos_url) {
 		// TODO Auto-generated method stub
 		boolean succeed=Db.tx(new IAtom() {
 			public boolean run()

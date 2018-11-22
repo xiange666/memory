@@ -15,7 +15,8 @@ public enum ResultCodeEnum
 	DATA_ERROR("1009","参数格式错误"),
 	INNERERROR("1010","内部错误请重试"),
 	DATA_EMPTY("1011","数据为空"),
-	DECODE_ERROR("1012","解析错误");
+	DECODE_ERROR("1012","解析错误"),
+	UPLOAD_ERROR("1013","上传图片失败");
 	
 
 	
