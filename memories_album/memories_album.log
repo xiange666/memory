@@ -1,0 +1,3 @@
+
+2018-12-02 16:42:00
+[WARN]-[Thread: main]-[com.qcloud.cos.COSClient.putObject()]: No content length specified for stream data.  Stream contents will be buffered in memory and could result in out of memory errors.

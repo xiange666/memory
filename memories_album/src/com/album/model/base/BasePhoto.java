@@ -73,6 +73,22 @@ public abstract class BasePhoto<M extends BasePhoto<M>> extends Model<M> impleme
 		return get("like_num");
 	}
 
+	public void setCollectNum(java.lang.Long collectNum) {
+		set("collect_num", collectNum);
+	}
+
+	public java.lang.Long getCollectNum() {
+		return get("collect_num");
+	}
+
+	public void setCosKey(java.lang.String cosKey) {
+		set("cos_key", cosKey);
+	}
+
+	public java.lang.String getCosKey() {
+		return get("cos_key");
+	}
+
 	public void setGmtCreate(java.util.Date gmtCreate) {
 		set("gmt_create", gmtCreate);
 	}

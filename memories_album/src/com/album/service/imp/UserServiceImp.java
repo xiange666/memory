@@ -25,14 +25,17 @@ public class UserServiceImp implements UserService{
 	@Override
 	public User add_user(String result) {
 		
-		JSONObject jsonObject=JSONObject.parseObject("result");
+		JSONObject jsonObject=JSONObject.parseObject(result);
+		System.out.println(jsonObject);
 		User  user=new User();
 		user.setOpenId(jsonObject.getString("openId"));
 		user.setUserSex(jsonObject.getInteger("gender"));
 		user.setNickName(jsonObject.getString("nickName"));
 		user.setUserCity(jsonObject.getString("city"));
-		user.save();
+		if(user.save())
 		return user;
+		else
+			return null;
 		// TODO Auto-generated method stub
 		
 	}
@@ -61,7 +64,10 @@ public class UserServiceImp implements UserService{
 		JSONArray jsonArray=new JSONArray();
 		
 		List<News> news=News.dao.find("select * from news where public_id=? order by gmt_create desc",userId);
+		if(news.size()==0)
+			return null;
 		for (News n : news) {
+			
 			List<Comment> comments=Comment.dao.find("select * from comment where news_id=? "
 					+ "order by gmt_create desc ",n.getNewsId());
 			JSONObject jsonObject=new JSONObject();
@@ -112,7 +118,7 @@ public class UserServiceImp implements UserService{
 				Long fan_num=be_followed.getLong("fan_num");
 				be_followed.setFanNum(fan_num-1);
 				//被关注用户表更改失败回滚
-				if(!be_followed.save())
+				if(!be_followed.update())
 					return false;
 				
 				//更改该用户的关注人数
@@ -120,11 +126,11 @@ public class UserServiceImp implements UserService{
 				Long follow_num=follower.getLong("follow_num");
 				follower.setFollowNum(follow_num-1);
 				//该用户表更改失败回滚
-				if(!follower.save())
+				if(!follower.update())
 					return false;
 				
 				//删除该用户圈子中关于被关注的所有动态
-				int result=Db.update("delete from NewsCircleTimeline "
+				int result=Db.update("delete from news_circle_timeline "
 						+ " where news_id IN (select news_id from news where public_id=? ) and user_id=? "
 						+ "and is_own=?",be_followedId,followerId,Constant.IS_OTHER);
 				//删除失败回滚
@@ -159,7 +165,7 @@ public class UserServiceImp implements UserService{
 				Long fan_num=be_followed.getLong("fan_num");
 				be_followed.setFanNum(fan_num+1);
 				//被关注用户表更改失败回滚
-				if(!be_followed.save())
+				if(!be_followed.update())
 					return false;
 				
 				//更改该用户的关注人数
@@ -167,7 +173,7 @@ public class UserServiceImp implements UserService{
 				Long follow_num=follower.getLong("follow_num");
 				follower.setFollowNum(follow_num+1);
 				//该用户表更改失败回滚
-				if(!follower.save())
+				if(!follower.update())
 					return false;
 				
 				//添加该用户圈子中关于被关注的公开动态

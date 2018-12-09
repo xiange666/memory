@@ -1,6 +1,7 @@
 package com.album.service.imp;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import com.album.model.Album;
@@ -36,14 +37,20 @@ public class AlbumServiceImp implements AlbumService{
 	}
 
 	@Override
-	public boolean add_photo(Long album_id, List<String> photos_url) {
+	public boolean add_photo(Long album_id, String[] photos_url,String[] photos_key,Long user_id,String user_name) {
 		// TODO Auto-generated method stub
 		boolean succeed=Db.tx(new IAtom() {
 			public boolean run()
 			{
-				for (String url : photos_url) {
+				for(int i=0;i<photos_url.length;i++)
+				 {
+					String url=photos_url[i];
+					String key=photos_key[i];
 					Photo photo=new Photo();
 					photo.setPhotoUrl(url);
+					photo.setCosKey(key);
+					photo.setUserId(user_id);
+					photo.setUserName(user_name);
 					photo.setMarkTime(new Date());
 					if(!photo.save())
 					{
@@ -68,17 +75,24 @@ public class AlbumServiceImp implements AlbumService{
 	}
 
 	@Override
-	public boolean del_photo(Long album_id, Long[] photos_id) {
+	public boolean del_photo(Long album_id, String[] photos_id) {
 		// TODO Auto-generated method stub
 		boolean succeed=Db.tx(new IAtom() {
 			
 			@Override
 			public boolean run() throws SQLException {
 				// TODO Auto-generated method stub
-				for (Long id : photos_id) {
-					int result=Db.update("delete from album_link_photo "
+				for (String id : photos_id) {
+					int result1=Db.update("delete from album_link_photo "
 							+ "where album_id=? and photo_id=?",album_id,id);
-					if(result==0)
+					
+					int result2=Db.update("delete from character "
+							+ "where photo_id=?",id);
+					int result3=Db.update("delete from thumb_up "
+							+ "where photo_id=?",id);
+					int result4=Db.update("delete from collect_photo"
+							+ "where photo_id=?",id);
+					if(result1==0||result2==0||result3==0||result4==0)
 						return false;
 					if(!Photo.dao.deleteById(id))
 						return false;
@@ -116,6 +130,20 @@ public class AlbumServiceImp implements AlbumService{
 		
 		return jsonArray;
 	}
+
+	@Override
+	public List<String> find_key(String[] photos_id) {
+		// TODO Auto-generated method stub
+		List<String> key=null;
+		for(String  id:photos_id)
+		{
+			Photo photo=Photo.dao .findFirst("select cos_key from photo where photo_id =?",id);
+			key.add(photo.getCosKey());
+		}
+		return null;
+	}
+	
+	
 	
 	
 

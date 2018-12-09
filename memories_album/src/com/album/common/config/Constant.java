@@ -24,7 +24,13 @@ public class Constant {
 	//选择存储空间
 	public static String bucketName="memor-bundle";
 	//选择文件夹名称
-	public static String folder="test/";
+	public static String folder="zong/";
+	
+	public static String appId="1257971248";
+	public static String secretId="AKIDLo6EAfN5dPAoGXJhVCNNILqTwDLrHNRO";
+	public static String secretKey="wlU4d6OcllaEibKrJagbKsEPOBqSuBH0";
+	public static String cos_bucketName="memory-1257971248";
+	
 	
 
 }

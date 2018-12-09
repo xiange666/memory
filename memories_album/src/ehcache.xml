@@ -25,5 +25,41 @@
             timeToLiveSeconds="1800"
             memoryStoreEvictionPolicy="LFU">
     </cache>
+    <cache  name="manThumbUp"
+            maxElementsInMemory="10000"
+            maxElementsOnDisk="1000"
+            eternal="false"
+            overflowToDisk="true"
+            timeToIdleSeconds="900"
+            timeToLiveSeconds="1800"
+            memoryStoreEvictionPolicy="LFU">
+    </cache>
+    <cache  name="manCollect"
+            maxElementsInMemory="10000"
+            maxElementsOnDisk="1000"
+            eternal="false"
+            overflowToDisk="true"
+            timeToIdleSeconds="900"
+            timeToLiveSeconds="1800"
+            memoryStoreEvictionPolicy="LFU">
+    </cache>
+    <cache  name="photoThumbUp"
+            maxElementsInMemory="10000"
+            maxElementsOnDisk="1000"
+            eternal="false"
+            overflowToDisk="true"
+            timeToIdleSeconds="900"
+            timeToLiveSeconds="1800"
+            memoryStoreEvictionPolicy="LFU">
+    </cache>
+    <cache  name="photoCollect"
+            maxElementsInMemory="10000"
+            maxElementsOnDisk="1000"
+            eternal="false"
+            overflowToDisk="true"
+            timeToIdleSeconds="900"
+            timeToLiveSeconds="1800"
+            memoryStoreEvictionPolicy="LFU">
+    </cache>
 
 </ehcache>

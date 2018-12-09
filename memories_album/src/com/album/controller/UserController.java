@@ -1,16 +1,23 @@
 package com.album.controller;
-
+import com.album.service.StorageSts;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.TreeMap;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.jfinal.aop.Duang;
+import com.jfinal.core.Const;
 import com.jfinal.core.Controller;
+import com.jfinal.weixin.sdk.api.ApiConfig;
+import com.jfinal.weixin.sdk.api.ApiResult;
+import com.jfinal.wxaapp.api.WxaUserApi;
 import com.album.common.config.BaseResponse;
+import com.album.common.config.Constant;
 import com.album.common.config.ResultCodeEnum;
 import com.album.model.Album;
 import com.album.model.User;
@@ -21,6 +28,7 @@ import com.album.service.imp.UserServiceImp;
 public class UserController extends Controller{
 	UserService userService=new UserServiceImp();
 	BaseResponse baseResponse=new BaseResponse();
+	protected WxaUserApi wxaUserApi = Duang.duang(WxaUserApi.class);
 	public void index()
 	{
 		showInfo();
@@ -32,78 +40,110 @@ public class UserController extends Controller{
 	 */
 	public void login() throws Exception
 	{
-		String code = this.getPara("code");
-		String encryptedData=this.getPara("encryptedData");
+		String codes=this.getPara("code");
+		String encryptedData=this.getPara("encryptedData");//加密数据带有特殊符号"+" url不能直接使用
 		String iv=this.getPara("iv");
-		// 小程序唯一标识 (在微信小程序管理后台获取)  
-	    String wxspAppid = "wx9272c2b22bebefe7";  
-	    // 小程序的 app secret (在微信小程序管理后台获取)  
-	    String wxspSecret = "0f5327d3cacf544120c861844a4b7127";  
-	    // 授权（必填）  
-	    String grant_type = "authorization_code"; 
-	    
-		////////////////1、向微信服务器 使用登录凭证 code 获取 session_key 和 openid  
-		//////////////// ////////////////  
-		// 请求参数  
-		String params = "appid=" + wxspAppid + "&secret=" + wxspSecret + "&js_code=" + code + "&grant_type="  
-		   + grant_type;  
-		// 发送请求  
-		String url="https://api.weixin.qq.com/sns/jscode2session";
-		URL realurl=new URL(url+"?"+params);
-		URLConnection connection=realurl.openConnection();
-		connection.setRequestProperty("accept", "*/*");
-		 connection.setRequestProperty("connection", "Keep-Alive");
-		 connection.setRequestProperty("user-agent","Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
-		 connection.connect();
-		 
-		 InputStream iStream=connection.getInputStream();
-		 InputStreamReader iReader=new InputStreamReader(iStream,"utf-8");
-		 BufferedReader bReader=new BufferedReader(iReader);
-		 String str=null;
-		 StringBuffer buffer = new StringBuffer();
-		 while((str = bReader.readLine()) != null)
-		 {
-			 buffer.append(str);
-		 }
-		 bReader.close();
-		 iReader.close();
-		 iStream.close();
-		 
-		 System.out.println(buffer.toString());
-		 
-		// 解析相应内容（转换成json对象） 
-		 JSONObject json = (JSONObject) JSONObject.parse(buffer.toString());
-		 if(json.get("session_key")!=null&&json.get("openid")!=null)
+		if(codes==null)
+		{
+			return ;
+		}
+		System.out.println(codes);
+//		ApiConfig api=new ApiConfig();
+//		api.setAppId("wxcf64167eca427fa3");
+//		api.setAppSecret("950efbd0a22411c1025e67603e9e84d4");
+//		WxaUserApi wxaUserApi=new WxaUserApi();
+//		
+		ApiResult apiResult=wxaUserApi.getSessionKey(codes);
+//		 
+//		 System.out.println(buffer);
+		if(apiResult.isSucceed())
+		{
+			String openid=apiResult.getStr("openid");
+			String sessionkey=apiResult.getStr("session_key");
+//			String token=UUIDKit.getUUID32();
+//			Jedis jedis=RedisUtil.getJedis();
+//			jedis.set(token,openid);
+//			//三天后过期
+//			jedis.expire(token, MainConstant.LOGIN_EXPIRATION_TIME);
+//			RedisUtil.returnResource(jedis);
+			System.out.println(openid+"   "+sessionkey);
+			User user=new User();
+			user=userService.find_by_OpenId(openid);
+			System.out.println(user==null);
+			JSONObject jsonObject=new JSONObject();
+			if(user!=null)
 			{
-				// 获取会话密钥（session_key）  
-				String session_key = json.get("session_key").toString();  
-				// 用户的唯一标识（openid）  
-				String openid = (String) json.get("openid"); 
-				User user=new User();
-				user=userService.find_by_OpenId(openid);
-				if(user!=null)
+				baseResponse.setResult(ResultCodeEnum.SUCCESS);
+				
+				jsonObject.put("user_id", user.getUserId());
+				baseResponse.setData(jsonObject);
+			}else
+			{
+				String result=AesCbcUtil.decrypt(encryptedData, sessionkey, iv);
+				System.out.println(result);
+				if(result==null)
 				{
-					baseResponse.setResult(ResultCodeEnum.SUCCESS);
-					baseResponse.setData(user);
+					baseResponse.setResult(ResultCodeEnum.DECODE_ERROR);
 				}else
 				{
-					String result=AesCbcUtil.decrypt(encryptedData, session_key, iv);
-					if(result==null)
+					user=userService.add_user(result);
+					if(user!=null)
 					{
-						baseResponse.setResult(ResultCodeEnum.DECODE_ERROR);
+						
+						baseResponse.setResult(ResultCodeEnum.SUCCESS);
+						jsonObject.put("user_id", user.getUserId());
+						baseResponse.setData(jsonObject);
 					}else
 					{
-						user=userService.add_user(result);
-						if(user!=null)
-						{
-							baseResponse.setResult(ResultCodeEnum.SUCCESS);
-							baseResponse.setData(user);
-						}
+						baseResponse.setResult(ResultCodeEnum.ADD_ERROR);
 					}
-					
 				}
 				
 			}
+			
+			
+		}
+		 
+//		// 解析相应内容（转换成json对象） 
+//		 JSONObject json = (JSONObject) JSONObject.parse(buffer.toString());
+//		 if(json.get("session_key")!=null&&json.get("openid")!=null)
+//			{
+//				// 获取会话密钥（session_key）  
+//				String session_key = json.get("session_key").toString();  
+//				// 用户的唯一标识（openid）  
+//				String openid = (String) json.get("openid"); 
+//				User user=new User();
+//				user=userService.find_by_OpenId(openid);
+//				System.out.println(user==null);
+//				if(user!=null)
+//				{
+//					baseResponse.setResult(ResultCodeEnum.SUCCESS);
+//					baseResponse.setData(user);
+//				}else
+//				{
+//					String result=AesCbcUtil.decrypt(encryptedData, session_key, iv);
+//					System.out.println(result);
+//					if(result==null)
+//					{
+//						baseResponse.setResult(ResultCodeEnum.DECODE_ERROR);
+//					}else
+//					{
+//						user=userService.add_user(result);
+//						if(user!=null)
+//						{
+//							JSONObject jsonObject=new JSONObject();
+//							baseResponse.setResult(ResultCodeEnum.SUCCESS);
+//							jsonObject.put("user_id", user.getUserId());
+//							baseResponse.setData(jsonObject);
+//						}else
+//						{
+//							baseResponse.setResult(ResultCodeEnum.ADD_ERROR);
+//						}
+//					}
+//					
+//				}
+//				
+//			}
 		 else
 		 {
 			 baseResponse.setResult(ResultCodeEnum.DECODE_ERROR);
@@ -308,6 +348,8 @@ public class UserController extends Controller{
 	{
 		
 	}
+	
+	
 	
 	
 

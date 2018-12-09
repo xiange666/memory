@@ -10,7 +10,9 @@ import com.album.model.Album;
 import com.album.service.AlbumService;
 import com.album.service.OssClientUtil;
 import com.album.service.imp.AlbumServiceImp;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.jfinal.core.Controller;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.upload.UploadFile;
@@ -18,7 +20,7 @@ import com.jfinal.upload.UploadFile;
 public class AlbumController extends Controller{
 	BaseResponse baseResponse=new BaseResponse();
 	AlbumService albumService=new AlbumServiceImp();
-	
+		
 	/**
 	 * 展示用户的相册
 	 */
@@ -54,12 +56,15 @@ public class AlbumController extends Controller{
 		{
 			baseResponse.setResult(ResultCodeEnum.NOT_COMPLETE);
 		}else {
-			album.setAlbumUrl("********");
+			album.setAlbumUrl("https://memory-1257971248.cos.ap-shanghai.myqcloud.com/image_url/v2-33267ef939b7fe585d5cb4a1c9149eb4_r.jpg");
 			Long album_id=albumService.add_album(album);
+			
 			if(album_id!=null)
 			{
+				JSONObject jObject=new JSONObject();
+				jObject.put("album_id", album_id);
 				baseResponse.setResult(ResultCodeEnum.SUCCESS);
-				baseResponse.setData(album_id);
+				baseResponse.setData(jObject);
 			}
 				
 		}
@@ -73,41 +78,26 @@ public class AlbumController extends Controller{
 	public void addPhoto()
 	{
 		Long album_id=this.getParaToLong("album_id");
-		OssClientUtil ossClientUtil=new OssClientUtil();
-		List<UploadFile> photos=this.getFiles();
-		if(album_id==null||photos==null)
+		Long user_id=this.getParaToLong("user_id");
+		String user_name=this.getPara("user_name");
+		String url=this.getPara("photos_url");
+		String key=this.getPara("photos_key");
+		
+		if(album_id==null||url==null||key==null||user_id==null||user_name==null)
 		{
 			baseResponse.setResult(ResultCodeEnum.NOT_COMPLETE);
 		}else
 		{
-			List<String > photos_url=new ArrayList<String>();
-			for (UploadFile uploadFile : photos) {
-				//获取上传的图片url
-				String path=uploadFile.getUploadPath();
-				String filename=uploadFile.getFileName();
-				path=path+"\\"+filename;
-				ossClientUtil.uploadImg2Oss(path);
-				String url=ossClientUtil.getImgUrl(path);
-				if(url==null)
-				{
-					photos_url=null;
-					break;
-				}
-				photos_url.add(url);
-			}
-			if(photos_url==null)
-			{
-				baseResponse.setResult(ResultCodeEnum.UPLOAD_ERROR);
-			}else
-			{
-				if(albumService.add_photo(album_id, photos_url))
+			String[] photos_url=url.split(",");
+			String[] photos_key=key.split(",");
+				if(albumService.add_photo(album_id, photos_url,photos_key,user_id,user_name))
 				{
 					baseResponse.setResult(ResultCodeEnum.SUCCESS);
 				}else
 				{
 					baseResponse.setResult(ResultCodeEnum.ADD_ERROR);
 				}
-			}
+			
 			
 		}
 		
@@ -121,11 +111,12 @@ public class AlbumController extends Controller{
 	public void delPhoto()
 	{
 		Long album_id=this.getParaToLong("album_id");
-		Long[] photos_id=this.getParaValuesToLong("photo_id");
-		if(album_id==null||photos_id==null)
+		String id=this.getPara("photo_id");
+		if(album_id==null||id==null)
 		{
 			baseResponse.setResult(ResultCodeEnum.NOT_COMPLETE);
 		}else {
+			String[] photos_id=id.split(",");
 			if(albumService.del_photo(album_id, photos_id))
 			{
 				baseResponse.setResult(ResultCodeEnum.SUCCESS);
@@ -182,6 +173,26 @@ public class AlbumController extends Controller{
 			{
 				baseResponse.setResult(ResultCodeEnum.SUCCESS);
 				baseResponse.setData(jsonarray);
+			}
+		}
+		renderJson(baseResponse);
+	}
+	
+	public void find_key()
+	{
+		String id=this.getPara("photo_id");
+		if(id==null)
+		{
+			baseResponse.setResult(ResultCodeEnum.NOT_COMPLETE);
+		}else {
+			String[] photos_id=id.split(",");
+			List<String> key=albumService.find_key(photos_id);
+			if(key==null)
+			{
+				baseResponse.setResult(ResultCodeEnum.DATA_EMPTY);
+			}else {
+				baseResponse.setData(key);
+				baseResponse.setResult(ResultCodeEnum.SUCCESS);
 			}
 		}
 		renderJson(baseResponse);

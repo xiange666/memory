@@ -1,10 +1,12 @@
 package com.album.common.config;
 
 import com.album.controller.AlbumController;
+import com.album.controller.FavoriteController;
 import com.album.controller.NewsController;
 import com.album.controller.PhotoController;
 import com.album.controller.ScoreController;
 import com.album.controller.UserController;
+import com.album.model.Favorite;
 import com.album.model._MappingKit;
 import com.jfinal.config.Constants;
 import com.jfinal.config.Handlers;
@@ -15,6 +17,8 @@ import com.jfinal.config.Routes;
 import com.jfinal.core.JFinal;
 import com.jfinal.kit.PropKit;
 import com.jfinal.template.Engine;
+import com.jfinal.wxaapp.WxaConfig;
+import com.jfinal.wxaapp.WxaConfigKit;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.plugin.ehcache.EhCachePlugin;
 import com.jfinal.json.FastJsonFactory;
@@ -58,6 +62,7 @@ public class MainConfig extends JFinalConfig {
 		me.add("/user", UserController.class);
 		me.add("/album", AlbumController.class);
 		me.add("/photo", PhotoController.class);
+		me.add("/favorite",FavoriteController.class);
 	}
 	/**
 	 * 配置JFinal插件
@@ -80,7 +85,7 @@ public class MainConfig extends JFinalConfig {
 		me.add(dbPlugin);
 		me.add(arp);
 		//配置缓存插件
-		me.add(new EhCachePlugin());
+		//me.add(new EhCachePlugin());
 	}
 	/**
 	 * 配置全局拦截器
@@ -105,6 +110,18 @@ public class MainConfig extends JFinalConfig {
 		//这里只有选择JFinal TPL的时候才用
 		//配置共享函数模板
 		//me.addSharedFunction("/view/common/layout.html")
+	}
+	
+	public void afterJFinalStart() 
+	{
+		// 配置微信 API 相关参数
+		WxaConfig wxaConfig=new WxaConfig();      
+		wxaConfig.setToken(PropKit.get("token"));
+		wxaConfig.setAppId(PropKit.get("appId"));
+		wxaConfig.setAppSecret(PropKit.get("appSecret"));
+        WxaConfigKit.setWxaConfig(wxaConfig);
+        //配置缓存
+        //EhCacheKit.init();
 	}
 	
 	
