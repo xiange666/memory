@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 
+import javax.print.DocFlavor.STRING;
+
 import com.album.common.config.BaseResponse;
 import com.album.common.config.Constant;
 import com.album.common.config.ResultCodeEnum;
@@ -47,11 +49,13 @@ public class PhotoController extends Controller{
 	}
 	
 	public void updatePhotoInfo() {
+		String characters=this.getPara("characters");
 		Photo photo = getModel(Photo.class);
-		if(photo.getPhotoId()==null||photo.getPhotoId()==null) {
+		if(photo.getPhotoId()==null||photo.getPhotoId()==null||characters==null) {
 			baseResponse.setResult(ResultCodeEnum.DATA_EMPTY);
 		}else {
-			baseResponse.setResult(photoService.update_photo_info(photo));
+			String[] names=characters.split(",");
+			baseResponse.setResult(photoService.update_photo_info(photo,names));
 		}
 		renderJson(baseResponse);
 	}

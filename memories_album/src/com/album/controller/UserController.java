@@ -48,24 +48,11 @@ public class UserController extends Controller{
 			return ;
 		}
 		System.out.println(codes);
-//		ApiConfig api=new ApiConfig();
-//		api.setAppId("wxcf64167eca427fa3");
-//		api.setAppSecret("950efbd0a22411c1025e67603e9e84d4");
-//		WxaUserApi wxaUserApi=new WxaUserApi();
-//		
 		ApiResult apiResult=wxaUserApi.getSessionKey(codes);
-//		 
-//		 System.out.println(buffer);
 		if(apiResult.isSucceed())
 		{
 			String openid=apiResult.getStr("openid");
 			String sessionkey=apiResult.getStr("session_key");
-//			String token=UUIDKit.getUUID32();
-//			Jedis jedis=RedisUtil.getJedis();
-//			jedis.set(token,openid);
-//			//三天后过期
-//			jedis.expire(token, MainConstant.LOGIN_EXPIRATION_TIME);
-//			RedisUtil.returnResource(jedis);
 			System.out.println(openid+"   "+sessionkey);
 			User user=new User();
 			user=userService.find_by_OpenId(openid);

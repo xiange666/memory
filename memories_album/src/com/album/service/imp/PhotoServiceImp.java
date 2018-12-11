@@ -8,11 +8,13 @@ import com.album.common.config.Constant;
 import com.album.common.config.ResultCodeEnum;
 import com.album.model.Album;
 import com.album.model.AlbumLinkPhoto;
+import com.album.model.Character;
 import com.album.model.CollectPhoto;
 import com.album.model.Photo;
 import com.album.model.ThumbUp;
 import com.album.service.OssClientUtil;
 import com.album.service.PhotoService;
+import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClient;
 import com.jfinal.plugin.activerecord.Db;
@@ -44,16 +46,29 @@ public class PhotoServiceImp implements PhotoService{
 	}
 
 	@Override
-	public Photo show_photo_info(Long photoId) {
+	public JSONObject show_photo_info(Long photoId) {
 		//数据库中需要新加入冗余字段才能这么写，要不然需要连接表，返回值类型改为JSONObject
-		return Photo.dao.findFirst("SELECT photo_id,public_id,public_name,photo_url,mark_people,mark_time,mark_place,mark_story,like_num,collcet_num "
-									+"FROM photo WHERE photo_id=?",photoId);
+		JSONObject jsonObject=new JSONObject();
+		Photo photo=Photo.dao.findFirst("select * from photo where photo_id =?",photoId);
+		jsonObject.put("photo", photo);
+		List<Character> character=Character.dao.find("select character_id,character_name from `character` where photo_id=?",photoId);
+		jsonObject.put("character", character);
+		return jsonObject;
 	}
 
 	@Override
-	public ResultCodeEnum update_photo_info(Photo photo) {
+	public ResultCodeEnum update_photo_info(Photo photo,String[] names) {
 		if(Photo.dao.findById(photo.getPhotoId())!=null) {
 			if(photo.update()) {
+				if(Db.update("delete from `character` where photo_id=?",photo.getPhotoId())==0)
+				{
+					for (String name : names) {
+						Character chars=new Character();
+						chars.setCharacterName(name);
+						chars.setPhotoId(photo.getPhotoId());
+						chars.save();
+					}
+				}
 				return ResultCodeEnum.SUCCESS;
 			}else {
 				return ResultCodeEnum.UPDATE_ERROR;

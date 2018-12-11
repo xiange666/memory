@@ -1,7 +1,6 @@
 <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
-         updateCheck="false" monitoring="autodetect"
-         dynamicConfig="true">
+         updateCheck="false" monitoring="autodetect"  dynamicConfig="true">
 
     <!--指定一个文件，当ehcache把数据写到硬盘上时，会默认把数据写到该文件下-->
     <!--user.home - 用户主目录；user.dir - 用户当前工作目录；java.io.tmpdir - 默认临时文件路径。-->

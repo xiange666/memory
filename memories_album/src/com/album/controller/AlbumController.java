@@ -110,14 +110,13 @@ public class AlbumController extends Controller{
 	 */
 	public void delPhoto()
 	{
-		Long album_id=this.getParaToLong("album_id");
 		String id=this.getPara("photo_id");
-		if(album_id==null||id==null)
+		if(id==null)
 		{
 			baseResponse.setResult(ResultCodeEnum.NOT_COMPLETE);
 		}else {
 			String[] photos_id=id.split(",");
-			if(albumService.del_photo(album_id, photos_id))
+			if(albumService.del_photo( photos_id))
 			{
 				baseResponse.setResult(ResultCodeEnum.SUCCESS);
 			}else
@@ -194,6 +193,27 @@ public class AlbumController extends Controller{
 				baseResponse.setData(key);
 				baseResponse.setResult(ResultCodeEnum.SUCCESS);
 			}
+		}
+		renderJson(baseResponse);
+	}
+	
+	public void update_album()
+	{
+		Album album=this.getModel(Album.class);
+		if(album==null)
+		{
+			baseResponse.setResult(ResultCodeEnum.NOT_COMPLETE);
+		}else {
+			album.setAlbumUrl("https://memory-1257971248.cos.ap-shanghai.myqcloud.com/image_url/v2-33267ef939b7fe585d5cb4a1c9149eb4_r.jpg");
+			boolean result=albumService.update_album(album);
+			if(result)
+			{
+				baseResponse.setResult(ResultCodeEnum.SUCCESS);
+			}else
+			{
+				baseResponse.setResult(ResultCodeEnum.UPDATE_ERROR);
+			}
+				
 		}
 		renderJson(baseResponse);
 	}
